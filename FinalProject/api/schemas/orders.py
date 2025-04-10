@@ -4,10 +4,12 @@ from pydantic import BaseModel
 from .order_details import OrderDetail
 
 
-
 class OrderBase(BaseModel):
-    customer_name: str
     description: Optional[str] = None
+    tracking_number: Optional[str] = None
+    total_price: Optional[float] = None
+    review_text: Optional[str] = None
+    review_rating: Optional[float] = None
 
 
 class OrderCreate(OrderBase):
