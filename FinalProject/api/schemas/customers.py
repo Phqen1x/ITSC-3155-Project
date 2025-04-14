@@ -7,10 +7,6 @@ from .customers import Customer
 
 class CustomerBase(BaseModel):
     customer_name: str
-    customer_email: str
-    customer_phone_number: str
-    customer_address: str
-    # customer_info: list[Customer]
 
 
 class CustomerCreate(CustomerBase):
@@ -26,7 +22,9 @@ class CustomerUpdate(BaseModel):
 
 class Customer(CustomerBase):
     id: int
-    # customer_info: list[Customer]
+    customer_email: str
+    customer_phone_number: str
+    customer_address: str
 
     class ConfigDict:
         from_attributes = True

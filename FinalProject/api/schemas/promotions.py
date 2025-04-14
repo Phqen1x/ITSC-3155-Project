@@ -23,7 +23,6 @@ class PromotionUpdate(BaseModel):
 
 class Promotion(PromotionBase):
     id: int
-    # promo: list[Promotion]
 
     class ConfigDict:
         from_attributes = True
