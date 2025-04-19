@@ -16,3 +16,5 @@ class Order(Base):
     order_ready = Column(DATETIME)
     review_text = Column(String(500))
     review_rating = Column(DECIMAL)
+
+    order_details = relationship("OrderDetail", back_populates="orders")
