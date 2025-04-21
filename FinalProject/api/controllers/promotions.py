@@ -1,71 +1,70 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status, Response, Depends
-from ..models import resources as model
+from ..models import promotions as model
 from sqlalchemy.exc import SQLAlchemyError
 
 
 def create(db: Session, request):
-    new_ingredient = model.Resource(
-        item=request.item,
-        amount=request.amount,
-        unit=request.unit
+    new_promotion = model.Promotion(
+        promotion_code=request.promotion_code,
+        expiration_date=request.expiration_date,
+        discount=request.discount,
+        # item_id=request.item_id
     )
 
     try:
-        db.add(new_ingredient)
+        db.add(new_promotion)
         db.commit()
-        db.refresh(new_ingredient)
+        db.refresh(new_promotion)
     except SQLAlchemyError as e:
         error = str(e.__dict__('orig'))
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
 
-    return new_ingredient
+    return new_promotion
 
 
 def read_all(db: Session):
     try:
-        result = db.query(model.Resource).all()
+        result = db.query(model.Promotion).all()
     except SQLAlchemyError as e:
-        error = str(e.__dict__['orig'])
+        error = str(e.__dict__('orig'))
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
     return result
 
 
-def read_one(db: Session, ingredient_id):
+def read_one(db: Session, promotion_id):
     try:
-        ingredient = db.query(model.Resource).filter(model.Resource.id == ingredient_id).first()
-        if not ingredient:
+        promotion = db.query(model.Promotion).filter(model.Promotion.id == promotion_id).first()
+        if not promotion:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
     except SQLAlchemyError as e:
         error = str(e.__dict__['orig'])
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
-    return ingredient
+    return promotion
 
 
-def update(db: Session, ingredient_id, request):
+def update(db: Session, promotion_id, request):
     try:
-        ingredient = db.query(model.Resource).filter(model.Resource.id == ingredient_id)
-        if not ingredient.first():
+        promotion = db.query(model.Promotion).filter(model.Promotion.id == promotion_id)
+        if not promotion.first():
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
         update_data = request.dict(exclude_unset=True)
-        ingredient.update(update_data, synchronize_session=False)
+        promotion.update(update_data, synchronize_session=False)
         db.commit()
     except SQLAlchemyError as e:
-        # error = str(e.__dict__['orig'])
-        error = str(getattr(e, 'orig', 'No original error found'))
+        error = str(e.__dict__['orig'])
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
-    return ingredient.first()
+    return promotion.first()
 
 
-def delete(db: Session, ingredient_id):
+def delete(db: Session, promotion_id):
     try:
-        ingredient = db.query(model.Resource).filter(model.Resource.id == ingredient_id)
-        if not ingredient.first():
+        promotion = db.query(model.Promotion).filter(model.Promotion.id == promotion_id)
+        if not promotion.first():
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
-        ingredient.delete(synchronize_session=False)
+        promotion.delete(synchronize_session=False)
         db.commit()
     except SQLAlchemyError as e:
-        # error = str(e.__dict__['orig'])
-        error = str(getattr(e, 'orig', 'No original error found'))
+        error = str(e.__dict__['orig'])
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
