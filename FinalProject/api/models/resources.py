@@ -12,4 +12,7 @@ class Resource(Base):
     unit = Column(String(100), unique=False, nullable=False)
     status = Column(String(100), unique=False, nullable=True)
 
-    recipes = relationship("Recipe", back_populates="resource")
+    recipes = relationship("Recipe", back_populates="resources")
+    recipes_resources = relationship("RecipesResource",
+                                     back_populates="resources")
+
