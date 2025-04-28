@@ -5,7 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 
 def create(db: Session, request):
-    new_ingredient = model.Resource(
+    new_ingredient = model.MenuItem(
         item=request.item,
         amount=request.amount,
         unit=request.unit
@@ -25,7 +25,7 @@ def create(db: Session, request):
 
 def read_all(db: Session):
     try:
-        result = db.query(model.Resource).all()
+        result = db.query(model.MenuItem).all()
     except SQLAlchemyError as e:
         # error = str(e.__dict__['orig'])
         error = str(getattr(e, 'orig', 'No original error found'))
@@ -35,7 +35,7 @@ def read_all(db: Session):
 
 def read_one(db: Session, ingredient_id):
     try:
-        ingredient = db.query(model.Resource).filter(model.Resource.id == ingredient_id).first()
+        ingredient = db.query(model.MenuItem).filter(model.MenuItem.id == ingredient_id).first()
         if not ingredient:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
     except SQLAlchemyError as e:
@@ -47,7 +47,7 @@ def read_one(db: Session, ingredient_id):
 
 def update(db: Session, ingredient_id, request):
     try:
-        ingredient = db.query(model.Resource).filter(model.Resource.id == ingredient_id)
+        ingredient = db.query(model.MenuItem).filter(model.MenuItem.id == ingredient_id)
         if not ingredient.first():
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
         update_data = request.dict(exclude_unset=True)
@@ -62,7 +62,7 @@ def update(db: Session, ingredient_id, request):
 
 def delete(db: Session, ingredient_id):
     try:
-        ingredient = db.query(model.Resource).filter(model.Resource.id == ingredient_id)
+        ingredient = db.query(model.MenuItem).filter(model.MenuItem.id == ingredient_id)
         if not ingredient.first():
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
         ingredient.delete(synchronize_session=False)
