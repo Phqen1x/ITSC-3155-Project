@@ -1,27 +1,43 @@
-from datetime import datetime
-from typing import Optional
-from pydantic import BaseModel
-from .resources import Resource
-from .MenuItem import MenuItem
+from typing import List
 
+from pydantic import BaseModel, field_serializer
+
+from ..schemas.resources import Resource
+from ..schemas.categories import Category
 
 class RecipeBase(BaseModel):
-    amount: int
+    pass
+
+
+class ResourceInRecipe(RecipeBase):
+    resource: Resource
+    amount: float
+
+    class ConfigDict:
+        from_attributes = True
+
+
+class CategoryInRecipe(RecipeBase):
+    category: Category
+
+    class ConfigDict:
+        from_attributes = True
 
 
 class RecipeCreate(RecipeBase):
-    item_id: int
-    resource_id: int
+    resources: list[ResourceInRecipe]
+    categories: list[CategoryInRecipe]
+
 
 class RecipeUpdate(BaseModel):
-    sandwich_id: Optional[int] = None
-    resource_id: Optional[int] = None
-    amount: Optional[int] = None
+    resources: list[ResourceInRecipe]
+    categories: list[CategoryInRecipe]
+    pass
 
 class Recipe(RecipeBase):
     id: int
-    sandwich: MenuItem = None
-    resource: Resource = None
+    resources: list[ResourceInRecipe]
+    categories: list[CategoryInRecipe]
 
     class ConfigDict:
         from_attributes = True

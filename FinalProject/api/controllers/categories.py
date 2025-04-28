@@ -1,39 +1,37 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status, Response, Depends
-from ..models import resources as model
+from ..models import categories as model
 from sqlalchemy.exc import SQLAlchemyError
 
 
 def create(db: Session, request):
-    new_ingredient = model.MenuItem(
-        item=request.item,
-        amount=request.amount,
-        unit=request.unit
+    new_category = model.Category(
+        type=request.type
     )
 
     try:
-        db.add(new_ingredient)
+        db.add(new_category)
         db.commit()
-        db.refresh(new_ingredient)
+        db.refresh(new_category)
     except SQLAlchemyError as e:
-        error = str(e.__dict__('orig'))
+        error = str(e.__dict__['orig'])
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
 
-    return new_ingredient
+    return new_category
 
 
 def read_all(db: Session):
     try:
-        result = db.query(model.MenuItem).all()
+        result = db.query(model.Category).all()
     except SQLAlchemyError as e:
         error = str(e.__dict__['orig'])
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
     return result
 
 
-def read_one(db: Session, ingredient_id):
+def read_one(db: Session, category_id):
     try:
-        ingredient = db.query(model.MenuItem).filter(model.MenuItem.id == ingredient_id).first()
+        ingredient = db.query(model.Category).filter(model.Category.id == category_id).first()
         if not ingredient:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
     except SQLAlchemyError as e:
@@ -42,9 +40,9 @@ def read_one(db: Session, ingredient_id):
     return ingredient
 
 
-def update(db: Session, ingredient_id, request):
+def update(db: Session, category_id, request):
     try:
-        ingredient = db.query(model.MenuItem).filter(model.MenuItem.id == ingredient_id)
+        ingredient = db.query(model.Category).filter(model.Category.id == category_id)
         if not ingredient.first():
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
         update_data = request.dict(exclude_unset=True)
@@ -57,9 +55,9 @@ def update(db: Session, ingredient_id, request):
     return ingredient.first()
 
 
-def delete(db: Session, ingredient_id):
+def delete(db: Session, category_id):
     try:
-        ingredient = db.query(model.MenuItem).filter(model.MenuItem.id == ingredient_id)
+        ingredient = db.query(model.Category).filter(model.Category.id == category_id)
         if not ingredient.first():
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
         ingredient.delete(synchronize_session=False)
