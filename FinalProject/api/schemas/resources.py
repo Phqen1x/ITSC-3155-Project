@@ -21,6 +21,7 @@ class ResourceUpdate(ResourceBase):
 
 class Resource(ResourceBase):
     id: int
+    status: Optional[str] = None
 
     class ConfigDict:
         from_attributes = True

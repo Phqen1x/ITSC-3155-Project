@@ -10,4 +10,4 @@ class Category(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     type = Column(String(100), unique=True, nullable=False)
 
-    recipes = relationship("Recipe", back_populates="categories")
+    #recipes = relationship("Recipe", back_populates="categories")
