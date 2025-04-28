@@ -31,11 +31,13 @@ class RecipeCreate(RecipeBase):
 
 class RecipeUpdate(BaseModel):
     resources: list[ResourceInRecipe]
+    categories: list[CategoryInRecipe]
     pass
 
 class Recipe(RecipeBase):
     id: int
     resources: list[ResourceInRecipe]
+    categories: list[CategoryInRecipe]
 
     class ConfigDict:
         from_attributes = True
