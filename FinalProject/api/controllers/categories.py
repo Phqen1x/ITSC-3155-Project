@@ -14,7 +14,7 @@ def create(db: Session, request):
         db.commit()
         db.refresh(new_category)
     except SQLAlchemyError as e:
-        error = str(e.__dict__('orig'))
+        error = str(e.__dict__['orig'])
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
 
     return new_category

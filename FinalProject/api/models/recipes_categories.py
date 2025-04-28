@@ -11,10 +11,10 @@ class RecipesCategories(Base):
     #id = Column(Integer, primary_key=True)
     recipe_id = Column(Integer, ForeignKey("recipes.id"), primary_key=True,
                        autoincrement=False)
-    category_id = Column(Integer, ForeignKey("resources.id"), primary_key=True,
+    category_id = Column(Integer, ForeignKey("categories.id"), primary_key=True,
                          autoincrement=False)
 
-    recipe = relationship("Recipe", back_populates="resources_link")
+    recipe = relationship("Recipe", back_populates="categories_link")
     category = relationship("Category", back_populates="recipes")
 
     resource_item = association_proxy(target_collection='resource', attr='item')

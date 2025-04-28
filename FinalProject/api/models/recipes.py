@@ -16,6 +16,7 @@ class Recipe(Base):
 
     #menu_items = relationship("MenuItem", back_populates="recipes")
     resources_link = relationship("RecipesResource", back_populates="recipe", cascade="all, delete-orphan")
+    categories_link = relationship("RecipesCategories", back_populates="recipe", cascade="all, delete-orphan")
 
     @property
     def resources(self):
@@ -33,10 +34,14 @@ class Recipe(Base):
             for link in self.resources_link
         ]
 
-    #resources = association_proxy("resources_link", "resource",
-    #                              creator = lambda resource_and_amount: RecipesResource(
-    #                                  resource=resource_and_amount["resource"],
-    #                                  amount=resource_and_amount["amount"])
-    #                              )
-    #recipes_resources = relationship("RecipesResource", back_populates="recipes")
-    #categories = relationship("Category", back_populates="recipes")
+    @property
+    def categories(self):
+        return [
+            {
+                "category": {
+                    "id": link.category.id,
+                    "type": link.category.type,
+                }
+            }
+            for link in self.categories_link
+        ]
