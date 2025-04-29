@@ -5,21 +5,30 @@ from .order_details import OrderDetail
 
 
 class OrderBase(BaseModel):
-    description: Optional[str] = None
-    tracking_number: Optional[str] = None
-    total_price: Optional[float] = None
-    review_text: Optional[str] = None
-    review_rating: Optional[float] = None
+    customer_name: str
+    description: str
+    total_price: float
+    type: Optional[str] = "Dine-In"
+    status: Optional[str] = "Your order is currently being processed."
+    promotion_code: Optional[str] = None
+
 
 
 class OrderCreate(OrderBase):
     pass
 
 
-class OrderUpdate(BaseModel):
+class OrderUpdateCustomer(OrderBase):
     customer_name: Optional[str] = None
     description: Optional[str] = None
+    type: Optional[str] = "Dine-In"
+    review_text: Optional[str] = None
+    review_rating: Optional[float] = None
 
+
+class OrderUpdateRestaurant(OrderBase):
+    type: Optional[str] = "Dine-In"
+    status: Optional[str] = "Your order is currently being process."
 
 class Order(OrderBase):
     id: int

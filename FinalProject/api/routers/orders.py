@@ -26,7 +26,12 @@ def read_one(item_id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{item_id}", response_model=schema.Order)
-def update(item_id: int, request: schema.OrderUpdate, db: Session = Depends(get_db)):
+def update_customer(item_id: int, request: schema.OrderUpdateCustomer, db: Session = Depends(get_db)):
+    return controller.update(db=db, request=request, item_id=item_id)
+
+
+@router.put("/{item_id}", response_model=schema.Order)
+def update_restaurant(item_id: int, request: schema.OrderUpdateRestaurant, db: Session = Depends(get_db)):
     return controller.update(db=db, request=request, item_id=item_id)
 
 

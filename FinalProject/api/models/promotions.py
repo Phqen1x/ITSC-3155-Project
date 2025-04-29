@@ -14,3 +14,4 @@ class Promotion(Base):
     item_id = Column(Integer, ForeignKey("menu_items.id"))
 
     menu_items = relationship("MenuItem", back_populates="promotions")
+    orders = relationship("Order", back_populates="promotions")
