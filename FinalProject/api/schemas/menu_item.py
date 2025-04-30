@@ -11,11 +11,11 @@ class MenuItemBase(BaseModel):
 
 
 class MenuItemCreate(MenuItemBase):
-    pass
+    amount: float
 
 
-class MenuItemUpdate(BaseModel):
-    sandwich_name: Optional[str] = None
+class MenuItemUpdate(MenuItemBase):
+    item_name: Optional[str] = None
     price: Optional[float] = None
     calories: Optional[int] = None
     category: Optional[str] = None
