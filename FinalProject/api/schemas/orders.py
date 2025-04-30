@@ -10,7 +10,7 @@ class OrderBase(BaseModel):
     total_price: float
     type: Optional[str] = "Dine-In"
     status: Optional[str] = "Your order is currently being processed."
-    promotion_code: Optional[str] = None
+    promotion_code: Optional[int] = None
 
 
 

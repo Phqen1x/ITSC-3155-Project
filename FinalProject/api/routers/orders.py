@@ -38,3 +38,23 @@ def update_restaurant(item_id: int, request: schema.OrderUpdateRestaurant, db: S
 @router.delete("/{item_id}")
 def delete(item_id: int, db: Session = Depends(get_db)):
     return controller.delete(db=db, item_id=item_id)
+
+
+@router.put("/{item_id}/place_order", response_model=None)
+def place_order(item_id: int, db: Session = Depends(get_db)):
+    return controller.place_order(db=db, item_id=item_id)
+
+
+@router.put("/{item_id}/cancel_order", response_model=None)
+def cancel_order(item_id: int, db: Session = Depends(get_db)):
+    return controller.cancel_order(db=db, item_id=item_id)
+
+
+@router.put("/{item_id}/prep_order", response_model=None)
+def prep_order(item_id: int, db: Session = Depends(get_db)):
+    return controller.prep_order(db=db, item_id=item_id)
+
+
+@router.put("/{item_id}/ready_order", response_model=None)
+def ready_order(item_id: int, db: Session = Depends(get_db)):
+    return controller.ready_order(db=db, item_id=item_id)
