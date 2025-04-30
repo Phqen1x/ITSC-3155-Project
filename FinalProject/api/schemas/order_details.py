@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel
-from .MenuItem import MenuItem
+from .menu_item import MenuItem
 
 
 class OrderDetailBase(BaseModel):
