@@ -1,17 +1,15 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status, Response
-from ..models import menu_item as model
+from ..models import MenuItem as model
 from sqlalchemy.exc import SQLAlchemyError
 
-
+# Newly created file by Tareq
 def create(db: Session, request):
     new_item = model.MenuItem(
         item_name=request.item_name,
         price=request.price,
         calories=request.calories,
         category=request.category
-        # It appears that this create method is missing the id attribute form models.
-        # Potentially missing other attribute
     )
 
     try:

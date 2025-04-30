@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 from ..dependencies.database import Base
 
-
+# Newly created by Tareq.
 class MenuItem(Base):
     __tablename__ = "menu_items"
 
