@@ -17,6 +17,7 @@ class Order(Base):
 
     # Order Statuses
     # order_placed = Column(DATETIME, server_default=str(datetime.now()))
+    # order_canceled = Column(DATETIME, server_default=str(datetime.now()))
     # order_prepping = Column(DATETIME, nullable=True)
     # order_ready = Column(DATETIME, nullable=True)
 
