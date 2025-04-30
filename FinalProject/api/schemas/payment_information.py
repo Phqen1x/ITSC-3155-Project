@@ -1,10 +1,8 @@
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel
-from .payment_information import PaymentInfo
 
 class PaymentBase(BaseModel):
-    customer_name: str
     card_number: str
     card_expir_date: datetime
     card_cvc: int

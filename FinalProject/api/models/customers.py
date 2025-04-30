@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy import Column, ForeignKey, Integer, String, DECIMAL, DATETIME
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -13,4 +15,5 @@ class Customer(Base):
     customer_phone_number = Column(String(100), unique=True, nullable=True)
     customer_address = Column(String(100), unique=False, nullable=True)
 
-    payment_information= relationship("PaymentInfo", back_populates="customers")
+    #payment_information= relationship("PaymentInfo", back_populates="customers")
+    #orders = relationship(Optional["Order"], back_populates="customer")

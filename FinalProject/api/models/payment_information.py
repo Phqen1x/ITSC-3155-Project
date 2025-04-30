@@ -10,7 +10,6 @@ class PaymentInfo(Base):
     card_number = Column(String(100), unique=True, nullable=False)
     card_expir_date = Column(DATETIME, unique=False, nullable=False)
     card_cvc = Column(Integer, unique=False, nullable=False)
-    transaction_status = Column(String(100), unique=False, nullable=False)
     customer_id = Column(Integer, ForeignKey("customers.id"))
 
-    customers = relationship("Customer", back_populates="payment_information")
+    #customers = relationship("Customer", back_populates="payment_information")

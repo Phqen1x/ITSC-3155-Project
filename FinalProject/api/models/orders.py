@@ -16,9 +16,10 @@ class Order(Base):
     status = Column(String(100), nullable=False, unique=False)
 
     # Order Statuses
-    # order_placed = Column(DATETIME, server_default=str(datetime.now()))
-    # order_prepping = Column(DATETIME, nullable=True)
-    # order_ready = Column(DATETIME, nullable=True)
+    order_placed = Column(DATETIME, nullable=True)
+    order_canceled = Column(DATETIME, nullable=True)
+    order_prepping = Column(DATETIME, nullable=True)
+    order_ready = Column(DATETIME, nullable=True)
 
     # Review Variables
     review_text = Column(String(500))

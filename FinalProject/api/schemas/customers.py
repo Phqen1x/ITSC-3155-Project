@@ -1,12 +1,13 @@
-from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel
-from .customers import Customer
 
 
 
 class CustomerBase(BaseModel):
     customer_name: str
+    customer_email: str
+    customer_phone_number: str
+    customer_address: str
 
 
 class CustomerCreate(CustomerBase):
