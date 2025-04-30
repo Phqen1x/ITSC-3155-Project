@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from ..controllers import orders as controller
 from ..schemas import orders as schema
 from ..dependencies.database import engine, get_db
+from ..schemas.orders import OrderStatusUpdate
 
 router = APIRouter(
     tags=['Orders'],
@@ -40,21 +41,21 @@ def delete(item_id: int, db: Session = Depends(get_db)):
     return controller.delete(db=db, item_id=item_id)
 
 
-@router.put("/{item_id}/place_order", response_model=None)
+@router.put("/{item_id}/place_order", response_model=schema.Order)
 def place_order(item_id: int, db: Session = Depends(get_db)):
     return controller.place_order(db=db, item_id=item_id)
 
 
-@router.put("/{item_id}/cancel_order", response_model=None)
+@router.put("/{item_id}/cancel_order", response_model=schema.Order)
 def cancel_order(item_id: int, db: Session = Depends(get_db)):
     return controller.cancel_order(db=db, item_id=item_id)
 
 
-@router.put("/{item_id}/prep_order", response_model=None)
+@router.put("/{item_id}/prep_order", response_model=schema.Order)
 def prep_order(item_id: int, db: Session = Depends(get_db)):
     return controller.prep_order(db=db, item_id=item_id)
 
 
-@router.put("/{item_id}/ready_order", response_model=None)
+@router.put("/{item_id}/ready_order", response_model=schema.Order)
 def ready_order(item_id: int, db: Session = Depends(get_db)):
     return controller.ready_order(db=db, item_id=item_id)
