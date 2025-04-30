@@ -13,4 +13,4 @@ class PaymentInfo(Base):
     transaction_status = Column(String(100), unique=False, nullable=False)
     customer_id = Column(Integer, ForeignKey("customers.id"))
 
-    customers = relationship("Customer", back_populates="payment_information")
+    #customers = relationship("Customer", back_populates="payment_information")
