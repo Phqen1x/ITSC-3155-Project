@@ -72,6 +72,14 @@ def create(db: Session, request):
     return new_order
 
 
+def create_cart(db, request):
+    if db.query(model.Order).filter(
+            model.Order.customer_name == request.customer_name,
+            model.Order.order_placed.is_(None)).first() is not None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cart already exists")
+    new_order = create(db, request)
+    return new_order
+
 def read_all(db: Session):
     try:
         result = db.query(model.Order).all()

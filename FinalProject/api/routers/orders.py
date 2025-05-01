@@ -16,6 +16,12 @@ def create(request: schema.OrderCreate, db: Session = Depends(get_db)):
     return controller.create(db=db, request=request)
 
 
+@router.post("/create_cart", response_model=schema.Order)
+def create_cart(request: schema.OrderCreate, db: Session = Depends(get_db)):
+    return controller.create_cart(db=db, request=request)
+
+
+
 @router.get("/", response_model=list[schema.Order])
 def read_all(db: Session = Depends(get_db)):
     return controller.read_all(db)
