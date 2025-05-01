@@ -100,18 +100,30 @@ def read_one(db: Session, item_id):
     return item
 
 
-def update(db: Session, item_id, request):
+def update(db: Session, order_id, request):
     try:
-        item = db.query(model.Order).filter(model.Order.id == item_id)
-        if not item.first():
+        order = db.query(model.Order).filter(model.Order.id == order_id).first()
+        if not order:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
+
         update_data = request.dict(exclude_unset=True)
-        item.update(update_data, synchronize_session=False)
+
+        if "order_Details" in update_data:
+            update_data.pop("resources")
+
+        for key, value in update_data.items():
+            setattr(order, key, value)
+
+        db.query(details_model.OrderDetail).filter(details_model.OrderDetail.order_id == order_id).delete()
+
+        update_order_details(db, order, request)
+        db.flush()
+        order.calculate_total_price()
         db.commit()
     except SQLAlchemyError as e:
-        error = str(e.__dict__['orig'])
+        error = str(getattr(e, 'orig', e))
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
-    return item.first()
+    return order
 
 
 def delete(db: Session, item_id):

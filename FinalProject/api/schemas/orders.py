@@ -33,11 +33,13 @@ class OrderUpdateCustomer(OrderBase):
     type: Optional[str] = "Dine-In"
     review_text: Optional[str] = None
     review_rating: Optional[float] = None
+    items: list[ItemsInOrder]
 
 
 class OrderUpdateRestaurant(OrderBase):
     type: Optional[str] = "Dine-In"
     status: Optional[str] = "Your order is currently being process."
+    items: list[ItemsInOrder]
 
 
 class OrderStatusUpdate(OrderBase):

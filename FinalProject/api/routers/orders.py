@@ -34,7 +34,7 @@ def read_one(item_id: int, db: Session = Depends(get_db)):
 
 @router.put("/{item_id}", response_model=schema.Order)
 def update_customer(item_id: int, request: schema.OrderUpdateCustomer, db: Session = Depends(get_db)):
-    return controller.update(db=db, request=request, item_id=item_id)
+    return controller.update(db=db, request=request, order_id=item_id)
 
 
 @router.put("/{item_id}", response_model=schema.Order)
