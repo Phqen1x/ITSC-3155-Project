@@ -30,7 +30,8 @@ class Order(Base):
     promotion_code = Column(Integer, ForeignKey("promotions.id"))
 
     # Relationships
-    order_details = relationship("OrderDetail", back_populates="order")
+    order_details = relationship("OrderDetail", back_populates="order",
+                                 cascade="all, delete-orphan")
     promotions = relationship("Promotion", back_populates="orders")
     customer = relationship("Customer", back_populates="orders")
 
