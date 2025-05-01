@@ -20,9 +20,9 @@ class OrderDetailUpdate(BaseModel):
 
 
 class OrderDetail(OrderDetailBase):
-    id: int
     order_id: int
-    item: MenuItem = None
+    item_id: int
+    amount: int
 
     class ConfigDict:
         from_attributes = True

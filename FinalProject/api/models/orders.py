@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from sqlalchemy import Column, ForeignKey, Integer, String, DECIMAL, DATETIME
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -28,6 +30,18 @@ class Order(Base):
     promotion_code = Column(Integer, ForeignKey("promotions.id"))
 
     # Relationships
-    order_details = relationship("OrderDetail", back_populates="orders")
-    # menu_items = relationship("MenuItem", back_populates="orders")
+    order_details = relationship("OrderDetail", back_populates="order")
     promotions = relationship("Promotion", back_populates="orders")
+    customer = relationship("Customer", back_populates="orders")
+
+    def calculate_total_price(self):
+        total = Decimal(0)
+        for detail in self.order_details:
+            if detail.menu_item and detail.menu_item.price is not None:
+                total += Decimal(detail.amount) * detail.menu_item.price
+                print(total)
+            else:
+                raise ValueError(
+                    f"Missing price or menu_item for item_id {detail.item_id}"
+                )
+        self.total_price = total

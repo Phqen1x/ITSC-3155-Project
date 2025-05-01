@@ -1,13 +1,54 @@
 from datetime import datetime
+from decimal import Decimal
 
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status, Response, Depends
 from ..models import orders as model
+from ..models import menu_item as item_model
+from ..models import order_details as details_model
 from sqlalchemy.exc import SQLAlchemyError
+
+from ..models.order_details import OrderDetail
+
+
+def update_order_details(db, order, request):
+    for item in request.items:
+        candidate = db.query(item_model.MenuItem).filter(
+            item_model.MenuItem.id == item.item.id).first()
+
+        if candidate:
+            mismatches = []
+            if candidate.item_name != item.item.item_name:
+                mismatches.append(f"item: expected '{candidate.item_name}', got '{item.item.item_name}'")
+            if candidate.price != item.item.price:
+                mismatches.append(f"price: expected '{candidate.price}', got '{item.item.price}'")
+            if candidate.calories != item.item.calories:
+                mismatches.append(f"calories: expected '{candidate.calories}', got '{item.item.calories}'")
+
+            if mismatches:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Resource ID {item.item.id} mismatch: " + "; ".join(mismatches)
+                )
+
+        if not candidate:
+            candidate = item_model.MenuItem(
+                item_name=item.item.item_name,
+                price=item.item.price,
+                calories=item.item.calories,
+                category=item.item.category
+            )
+            db.add(candidate)
+
+        order.order_details.append(OrderDetail(
+            menu_item=candidate,
+            amount=item.amount
+            )
+        )
 
 
 def create(db: Session, request):
-    new_item = model.Order(
+    new_order = model.Order(
         customer_name=request.customer_name,
         description=request.description,
         total_price=request.total_price,
@@ -16,15 +57,19 @@ def create(db: Session, request):
         promotion_code=request.promotion_code
     )
 
+    update_order_details(db, new_order, request)
+
     try:
-        db.add(new_item)
+        db.add(new_order)
+        db.flush()
+        new_order.calculate_total_price()
         db.commit()
-        db.refresh(new_item)
+        db.refresh(new_order)
     except SQLAlchemyError as e:
         error = str(e.__dict__['orig'])
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
 
-    return new_item
+    return new_order
 
 
 def read_all(db: Session):
@@ -125,6 +170,6 @@ def ready_order(db: Session, item_id):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
     return item.first()
 
-  
-  def analyze_data():
+
+def analyze_data():
     pass
