@@ -13,7 +13,7 @@ class Order(Base):
     customer_id = Column(Integer, ForeignKey("customers.id"))
     customer_name = Column(String(100), nullable=False, unique=False)
     description = Column(String(500), nullable=False, unique=False)
-    total_price = Column(DECIMAL(4, 2), nullable=False, unique=False)
+    total_price = Column(DECIMAL(10, 2), nullable=False, unique=False)
     type = Column(String(100), nullable=False, unique=False)
     status = Column(String(100), nullable=False, unique=False)
 

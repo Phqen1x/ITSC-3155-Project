@@ -191,5 +191,38 @@ def ready_order(db: Session, item_id):
     return item.first()
 
 
+def cart_add_item(db: Session, order_id, request):
+    try:
+        order = db.query(model.Order).filter(
+            model.Order.id == order_id).first()
+        item = db.query(item_model.MenuItem).filter(
+            item_model.MenuItem.id == request.item.id).first()
+
+        if not order or not item:
+            raise HTTPException(status_code=404, detail="Order or item not found")
+
+        candidate = db.query(details_model.OrderDetail).filter(
+            details_model.OrderDetail.order_id == order_id,
+            details_model.OrderDetail.item_id == request.item.id).first()
+
+        if candidate:
+            candidate.amount += request.amount
+        else:
+            db.add(details_model.OrderDetail(
+                order_id=order_id,
+                item_id=item.id,
+                amount=request.amount
+            ))
+        order.calculate_total_price()
+        db.commit()
+    except SQLAlchemyError as e:
+        error = str(getattr(e, 'orig', e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
+    return order
+
+
+
+
+
 def analyze_data():
     pass

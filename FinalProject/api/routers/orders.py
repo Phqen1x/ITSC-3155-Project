@@ -16,10 +16,9 @@ def create(request: schema.OrderCreate, db: Session = Depends(get_db)):
     return controller.create(db=db, request=request)
 
 
-@router.post("/create_cart", response_model=schema.Order)
+@router.post("/cart/create", response_model=schema.Order)
 def create_cart(request: schema.OrderCreate, db: Session = Depends(get_db)):
     return controller.create_cart(db=db, request=request)
-
 
 
 @router.get("/", response_model=list[schema.Order])
@@ -42,9 +41,9 @@ def update_restaurant(item_id: int, request: schema.OrderUpdateRestaurant, db: S
     return controller.update(db=db, request=request, item_id=item_id)
 
 
-@router.delete("/{item_id}")
-def delete(item_id: int, db: Session = Depends(get_db)):
-    return controller.delete(db=db, item_id=item_id)
+@router.put("/cart/add_item/{order_id}/", response_model=schema.Order)
+def cart_add_item(order_id:int,request: schema.ItemsInOrder, db: Session = Depends(get_db)):
+    return controller.cart_add_item(db=db, request=request,order_id=order_id)
 
 
 @router.put("/{item_id}/place_order", response_model=schema.Order)
@@ -65,3 +64,8 @@ def prep_order(item_id: int, db: Session = Depends(get_db)):
 @router.put("/{item_id}/ready_order", response_model=schema.Order)
 def ready_order(item_id: int, db: Session = Depends(get_db)):
     return controller.ready_order(db=db, item_id=item_id)
+
+
+@router.delete("/{item_id}")
+def delete(item_id: int, db: Session = Depends(get_db)):
+    return controller.delete(db=db, item_id=item_id)
