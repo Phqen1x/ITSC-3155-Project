@@ -137,17 +137,32 @@ def list_items_by_amount_of_order(db: Session, order_id):
 # also create a function that will allow you leave review for orders. Specifically a string.
 
 # Function 4: Allow user to rate their orders.
-def rate_orders():
+def rate_orders(db: Session, order_id):
     # Assign orders a value like 1-5.
 
-    pass
+    # Create an orders list.
+    orders = db.query(model.Order)
+
+    # Access review_rating.
+    ratings = db.query(model.review_rating)
+
+    # return back a proper rating.
+    for rating in ratings:
+        if rating == 1:
+            return 1
+        elif rating == 2:
+            return 2
+        elif rating == 3:
+            return 3
+        elif rating == 4:
+            return 4
+        elif rating == 5:
+            return 5
+
 
 # Function 5: Allow the user to review order
 def review_orders():
     # Allow user to create a description.
-    pass
+    description = input("Please enter a review: ")
 
-
-
-
-
+    return description
