@@ -45,6 +45,10 @@ def update_restaurant(item_id: int, request: schema.OrderUpdateRestaurant, db: S
 def cart_add_item(order_id:int,request: schema.ItemsInOrder, db: Session = Depends(get_db)):
     return controller.cart_add_item(db=db, request=request,order_id=order_id)
 
+@router.put("/cart/remove_item/{order_id}/", response_model=schema.Order)
+def cart_remove_item(order_id:int,request: schema.ItemsInOrder, db: Session = Depends(get_db)):
+    return controller.cart_remove_item(db=db, request=request,order_id=order_id)
+
 
 @router.put("/{item_id}/place_order", response_model=schema.Order)
 def place_order(item_id: int, db: Session = Depends(get_db)):

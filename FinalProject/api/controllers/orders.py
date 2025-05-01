@@ -201,6 +201,9 @@ def cart_add_item(db: Session, order_id, request):
         if not order or not item:
             raise HTTPException(status_code=404, detail="Order or item not found")
 
+        if order.order_placed:
+            raise HTTPException(status_code=403, detail="Order is not a cart")
+
         candidate = db.query(details_model.OrderDetail).filter(
             details_model.OrderDetail.order_id == order_id,
             details_model.OrderDetail.item_id == request.item.id).first()
@@ -221,7 +224,36 @@ def cart_add_item(db: Session, order_id, request):
     return order
 
 
+def cart_remove_item(db: Session, order_id, request):
+    try:
+        order = db.query(model.Order).filter(
+            model.Order.id == order_id).first()
+        item = db.query(item_model.MenuItem).filter(
+            item_model.MenuItem.id == request.item.id).first()
 
+        if not order or not item:
+            raise HTTPException(status_code=404, detail="Order or item not found")
+
+        if order.order_placed:
+            raise HTTPException(status_code=403, detail="Order is not a cart")
+
+        candidate = db.query(details_model.OrderDetail).filter(
+            details_model.OrderDetail.order_id == order_id,
+            details_model.OrderDetail.item_id == request.item.id).first()
+
+        if candidate:
+            candidate.amount -= request.amount
+
+            if candidate.amount <= 0:
+                db.delete(candidate)
+        else:
+            raise HTTPException(status_code=404, detail="Item not found in cart")
+        order.calculate_total_price()
+        db.commit()
+    except SQLAlchemyError as e:
+        error = str(getattr(e, 'orig', e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
+    return order
 
 
 def analyze_data():
