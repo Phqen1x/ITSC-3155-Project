@@ -5,14 +5,16 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException, status, Response, Depends
 from ..models import orders as model
 from ..models import menu_item as item_model
+from ..models import promotions as promotions_model
 from ..models import order_details as details_model
+from ..models.orders import Order
 from sqlalchemy.exc import SQLAlchemyError
 
 from ..models.order_details import OrderDetail
 
 
 def update_order_details(db, order, request):
-    for item in request.items:
+    for order in request.orders:
         candidate = db.query(item_model.MenuItem).filter(
             item_model.MenuItem.id == item.item.id).first()
 
@@ -47,22 +49,28 @@ def update_order_details(db, order, request):
         )
 
 
+
 def create(db: Session, request):
+    if request.promotion_code:
+        promotion = db.query(promotions_model.Promotion).filter(
+            promotions_model.Promotion.promotion_code == request.promotion_code).first()
+    print(f"HERE: {promotion.discount}")
+
     new_order = model.Order(
         customer_name=request.customer_name,
         description=request.description,
         total_price=request.total_price,
         type=request.type,
         status=request.status,
-        promotion_code=request.promotion_code
+        promotion_id=promotion.id
     )
 
     update_order_details(db, new_order, request)
-
+    
     try:
         db.add(new_order)
         db.flush()
-        new_order.calculate_total_price()
+        new_order.calculate_total_price(promotion.discount)
         db.commit()
         db.refresh(new_order)
     except SQLAlchemyError as e:
@@ -89,15 +97,15 @@ def read_all(db: Session):
     return result
 
 
-def read_one(db: Session, item_id):
+def read_one(db: Session, order_id):
     try:
-        item = db.query(model.Order).filter(model.Order.id == item_id).first()
-        if not item:
+        order = db.query(model.Order).filter(model.Order.id == order_id).first()
+        if not order:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
     except SQLAlchemyError as e:
         error = str(e.__dict__['orig'])
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
-    return item
+    return order
 
 
 def update(db: Session, order_id, request):
@@ -126,9 +134,23 @@ def update(db: Session, order_id, request):
     return order
 
 
-def delete(db: Session, item_id):
+def review(db: Session, order_id, request):
     try:
-        order = db.query(model.Order).filter(model.Order.id == item_id).first()
+        order = db.query(model.Order).filter(model.Order.id == order_id)
+        if not order.first():
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
+        update_data = request.dict(exclude_unset=True)
+        order.update(update_data, synchronize_session=False)
+        db.commit()
+    except SQLAlchemyError as e:
+        error = str(getattr(e, 'orig', e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
+    return order.first()
+
+
+def delete(db: Session, order_id):
+    try:
+        order = db.query(model.Order).filter(model.Order.id == order_id).first()
         if not order:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
         db.delete(order)
@@ -138,57 +160,67 @@ def delete(db: Session, item_id):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
- 
-def place_order(db: Session, item_id):
+def place_order(db: Session, order_id):
     try:
-        item = db.query(model.Order).filter(model.Order.id == item_id)
-        if not item.first():
+        order = db.query(model.Order).filter(model.Order.id == order_id)
+        if not order.first():
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
-        #item.order_placed = datetime.now()
-        item.update({"order_placed": datetime.now()}, synchronize_session=False)
-        db.commit()
+        elif not order.first().order_placed:
+            order.update({"order_placed": datetime.now()}, synchronize_session=False)
+            db.commit()
+        else:
+           raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Order has already been placed")
     except SQLAlchemyError as e:
         error = str(e.__dict__['orig'])
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
-    return item.first()
+    return order.first()
 
-def cancel_order(db: Session, item_id):
+def cancel_order(db: Session, order_id):
     try:
-        item = db.query(model.Order).filter(model.Order.id == item_id)
-        if not item.first():
+        order = db.query(model.Order).filter(model.Order.id == order_id)
+        if not order.first():
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
-        item.update({"order_canceled": datetime.now()}, synchronize_session=False)
-        db.commit()
+        elif order.first().order_placed and not order.first().order_canceled and not order.first().order_ready:
+            order.update({"order_canceled": datetime.now()}, synchronize_session=False)
+            db.commit()
+        else:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Order either hasn't been placed, or is already canceled")
     except SQLAlchemyError as e:
         error = str(e.__dict__['orig'])
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
-    return item.first()
+    return order.first()
 
 
-def prep_order(db: Session, item_id):
+def prep_order(db: Session, order_id):
     try:
-        item = db.query(model.Order).filter(model.Order.id == item_id)
-        if not item.first():
+        order = db.query(model.Order).filter(model.Order.id == order_id)
+        if not order.first():
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
-        item.update({"order_prepping": datetime.now()}, synchronize_session=False)
-        db.commit()
+        elif order.first().order_placed and not order.first().order_canceled and not order.first().order_prepping:
+            order.update({"order_prepping": datetime.now()}, synchronize_session=False)
+            db.commit()
+        else:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Order either hasn't been placed, is already being prepped, or is already canceled")
     except SQLAlchemyError as e:
         error = str(e.__dict__['orig'])
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
-    return item.first()
+    return order.first()
 
 
-def ready_order(db: Session, item_id):
+def ready_order(db: Session, order_id):
     try:
-        item = db.query(model.Order).filter(model.Order.id == item_id)
-        if not item.first():
+        order = db.query(model.Order).filter(model.Order.id == order_id)
+        if not order.first():
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
-        item.update({"order_ready": datetime.now()}, synchronize_session=False)
-        db.commit()
+        elif (order.first().order_placed and order.first().order_prepping and not order.first().order_ready) and not order.first().order_canceled:
+            order.update({"order_ready": datetime.now()}, synchronize_session=False)
+            db.commit()
+        else:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Order either hasn't been placed, isn't being prepped yet, is already ready, or is already canceled")
     except SQLAlchemyError as e:
         error = str(e.__dict__['orig'])
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
-    return item.first()
+    return order.first()
 
 
 def cart_add_item(db: Session, order_id, request):
@@ -281,7 +313,33 @@ def get_status(db, order_id):
     except SQLAlchemyError as e:
         error = str(getattr(e, 'orig', e))
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
+'''
+def rate_orders(db: Session, order_id):
+    # Assign orders a blue like 1-5.
+    # Create an orders list.
+    orders = db.query(model.Order)
 
+    # Access review_rating.
+    ratings = db.query(model.review_rating)
 
-def analyze_data():
-    pass
+    # return back a proper rating.
+    for rating in ratings:
+        if rating == 1:
+            return 1
+
+        elif rating == 2:
+            return 2
+ 
+        elif rating == 3:
+            return 3
+
+        elif rating == 4:
+            return 4
+        
+        elif rating == 5:
+            return 5
+    # Function 5: Allow the user to review order
+    def review_orders():
+        # Allow user to create a description.
+        description = input("Please enter a review: ")
+        return description'''
