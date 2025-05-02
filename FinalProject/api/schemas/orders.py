@@ -11,7 +11,6 @@ class OrderBase(BaseModel):
     description: str
     total_price: float
     type: Optional[str] = "Dine-In"
-    status: Optional[str] = "Your order is currently being processed."
     promotion_code: Optional[int] = None
 
 
@@ -42,7 +41,6 @@ class OrderUpdateCustomer(OrderBase):
 
 class OrderUpdateRestaurant(OrderBase):
     type: Optional[str] = "Dine-In"
-    status: Optional[str] = "Your order is currently being process."
     items: list[ItemsInOrder]
 
 

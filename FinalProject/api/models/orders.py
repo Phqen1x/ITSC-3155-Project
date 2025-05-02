@@ -15,7 +15,6 @@ class Order(Base):
     description = Column(String(500), nullable=False, unique=False)
     total_price = Column(DECIMAL(10, 2), nullable=False, unique=False)
     type = Column(String(100), nullable=False, unique=False)
-    status = Column(String(100), nullable=False, unique=False)
 
     # Order Statuses
     order_placed = Column(DATETIME, nullable=True)
