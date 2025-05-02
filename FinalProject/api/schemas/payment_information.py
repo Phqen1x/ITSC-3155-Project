@@ -11,7 +11,6 @@ class PaymentCreate(PaymentBase):
     pass
 
 class PaymentUpdate(BaseModel):
-    customer_name: Optional[str] = None
     card_number: Optional[str] = None
     card_expir_date: Optional[datetime] = None
     card_cvc: Optional[int] = None
