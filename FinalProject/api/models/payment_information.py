@@ -12,4 +12,4 @@ class PaymentInfo(Base):
     card_cvc = Column(Integer, unique=False, nullable=False)
     customer_id = Column(Integer, ForeignKey("customers.id"))
 
-    #customers = relationship("Customer", back_populates="payment_information")
+    customer = relationship("Customer", back_populates="payment_information")

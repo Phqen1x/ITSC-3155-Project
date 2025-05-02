@@ -15,5 +15,5 @@ class Customer(Base):
     customer_phone_number = Column(String(100), unique=True, nullable=True)
     customer_address = Column(String(100), unique=False, nullable=True)
 
-    #payment_information= relationship("PaymentInfo", back_populates="customers")
-    #orders = relationship(Optional["Order"], back_populates="customer")
+    payment_information= relationship("PaymentInfo", back_populates="customer")
+    orders = relationship("Order", back_populates="customer")

@@ -1,6 +1,8 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel
+
+from .menu_item import MenuItem
 from .order_details import OrderDetail
 
 
@@ -13,9 +15,20 @@ class OrderBase(BaseModel):
     promotion_code: Optional[int] = None
 
 
+class ItemsInOrder(BaseModel):
+    item: MenuItem
+    amount: float
+
+    class ConfigDict:
+        from_attributes = True
+
+
+class OrderStatus(BaseModel):
+    status: str
+    time: float
 
 class OrderCreate(OrderBase):
-    pass
+    items: list[ItemsInOrder]
 
 
 class OrderUpdateCustomer(OrderBase):
@@ -24,11 +37,13 @@ class OrderUpdateCustomer(OrderBase):
     type: Optional[str] = "Dine-In"
     review_text: Optional[str] = None
     review_rating: Optional[float] = None
+    items: list[ItemsInOrder]
 
 
 class OrderUpdateRestaurant(OrderBase):
     type: Optional[str] = "Dine-In"
     status: Optional[str] = "Your order is currently being process."
+    items: list[ItemsInOrder]
 
 
 class OrderStatusUpdate(OrderBase):
