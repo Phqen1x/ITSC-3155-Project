@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 
 from sqlalchemy.orm import Session
@@ -254,6 +254,33 @@ def cart_remove_item(db: Session, order_id, request):
         error = str(getattr(e, 'orig', e))
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
     return order
+
+
+def get_status(db, order_id):
+    try:
+        order = db.query(model.Order).filter(
+            model.Order.id == order_id).first()
+
+        order_status = {"status": str, "time": datetime}
+
+        if not order:
+            raise HTTPException(status_code=404, detail="Order not found")
+
+        if not order.order_placed:
+            raise HTTPException(status_code=403, detail="Order is still in cart")
+
+        if order.order_canceled:
+            raise HTTPException(status_code=403, detail="Order is cancelled")
+
+        if order.order_ready:
+            return {"status": "ready", "time": (datetime.now() - order.order_ready).total_seconds()}
+        elif order.order_prepping:
+            return {"status": "prepping", "time": (datetime.now() - order.order_prepping).total_seconds()}
+        else:
+            return {"status": "placed", "time": (datetime.now() - order.order_placed).total_seconds()}
+    except SQLAlchemyError as e:
+        error = str(getattr(e, 'orig', e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
 
 
 def analyze_data():

@@ -23,6 +23,10 @@ class ItemsInOrder(BaseModel):
         from_attributes = True
 
 
+class OrderStatus(BaseModel):
+    status: str
+    time: float
+
 class OrderCreate(OrderBase):
     items: list[ItemsInOrder]
 
