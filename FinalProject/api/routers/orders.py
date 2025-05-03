@@ -6,7 +6,7 @@ from ..dependencies.database import engine, get_db
 from ..schemas.orders import OrderStatusUpdate
 
 router = APIRouter(
-        tags=['Orders'],
+    tags=['Orders'],
     prefix="/orders"
 )
 

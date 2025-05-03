@@ -48,8 +48,31 @@ def update_order_details(db, order, request):
         )
 
 
+def check_resources(order):
+    for detail in order.order_details:
+        menu_item = detail.menu_item
+        recipe = menu_item.recipe
+        for recipe_resource in recipe.resources_link:
+            required_amount = detail.amount * recipe_resource.amount
+            if recipe_resource.resource.amount < required_amount:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=f"Insufficient resource: {recipe_resource.resource.item}"
+                )
+
+
+def update_resources(order):
+    check_resources(order)
+
+    # Deduct resources
+    for detail in order.order_details:
+        for recipe_resource in detail.menu_item.recipe.resources_link:
+            used_amount = detail.amount * recipe_resource.amount
+            recipe_resource.resource.amount -= used_amount
+
 
 def create(db: Session, request):
+    promotion = None
     if request.promotion_code:
         promotion = db.query(promotions_model.Promotion).filter(
             promotions_model.Promotion.promotion_code == request.promotion_code).first()
@@ -60,18 +83,23 @@ def create(db: Session, request):
         description=request.description,
         total_price=request.total_price,
         type=request.type,
-        status=request.status# ,
+        #status=request.status# ,
         # promotion_id=promotion.id
     )
 
     update_order_details(db, new_order, request)
+
+    check_resources(new_order)
     
     try:
         db.add(new_order)
         db.flush()
-        print(promotion.expiration_date > datetime.now())
-        if promotion and (datetime.now() - promotion.expiration_date).total_seconds() < 0:
-            new_order.calculate_total_price(promotion.discount)
+        if promotion:
+            print(promotion.expiration_date > datetime.now())
+            if promotion and (datetime.now() - promotion.expiration_date).total_seconds() < 0:
+                new_order.calculate_total_price(promotion.discount)
+            else:
+                new_order.calculate_total_price()
         else:
             new_order.calculate_total_price()
         db.commit()
@@ -127,6 +155,7 @@ def update(db: Session, order_id, request):
         db.query(details_model.OrderDetail).filter(details_model.OrderDetail.order_id == order_id).delete()
 
         update_order_details(db, order, request)
+        check_resources(order)
         db.flush()
         order.calculate_total_price()
         db.commit()
@@ -162,21 +191,27 @@ def delete(db: Session, order_id):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
+
 def place_order(db: Session, order_id):
     try:
-        order = db.query(model.Order).filter(model.Order.id == order_id)
-        if not order.first():
+        order_query = (db.query(model.Order).filter(model.Order.id == order_id))
+        order = order_query.first()
+        if not order:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
-        elif not order.first().order_placed:
-            order.update({"status": "Your order has been placed"}, synchronize_session=False)
-            order.update({"order_placed": datetime.now()}, synchronize_session=False)
-            db.commit()
-        else:
-           raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Order has already been placed")
+
+        if order.order_placed:
+                raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Order has already been placed")
+
+        update_resources(order)
+
+        order_query.update({"status": "Your order has been placed"}, synchronize_session=False)
+        order_query.update({"order_placed": datetime.now()}, synchronize_session=False)
+        db.commit()
+
     except SQLAlchemyError as e:
         error = str(e.__dict__['orig'])
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
-    return order.first()
+    return order
 
 def cancel_order(db: Session, order_id):
     try:
@@ -254,6 +289,8 @@ def cart_add_item(db: Session, order_id, request):
                 item_id=item.id,
                 amount=request.amount
             ))
+
+        check_resources(order)
         order.calculate_total_price()
         db.commit()
     except SQLAlchemyError as e:
