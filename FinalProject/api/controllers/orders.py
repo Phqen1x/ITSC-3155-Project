@@ -1,8 +1,7 @@
-from datetime import datetime, timedelta
-from decimal import Decimal
+from datetime import datetime
 
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, status, Response, Depends
+from fastapi import HTTPException, status, Response
 from ..models import orders as model
 from ..models import menu_item as item_model
 from ..models import promotions as promotions_model
@@ -292,8 +291,6 @@ def get_status(db, order_id):
     try:
         order = db.query(model.Order).filter(
             model.Order.id == order_id).first()
-
-        order_status = {"status": str, "time": datetime}
 
         if not order:
             raise HTTPException(status_code=404, detail="Order not found")

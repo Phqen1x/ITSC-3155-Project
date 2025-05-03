@@ -10,6 +10,15 @@ class CustomerBase(BaseModel):
     customer_address: str
 
 
+class CustomerOrders(BaseModel):
+    customer_name: str
+    description: str
+    total_price: float
+    type: Optional[str] = "Dine-In"
+    status: Optional[str] = "Your order is currently being processed."
+    promotion_code: Optional[int] = None
+
+
 class CustomerCreate(CustomerBase):
     pass
 

@@ -47,7 +47,6 @@ class OrderReview(BaseModel):
 
 class OrderUpdateRestaurant(OrderBase):
     type: Optional[str] = "Dine-In"
-    status: Optional[str] = "Your order is currently being process."
     items: list[ItemsInOrder]
 
 
