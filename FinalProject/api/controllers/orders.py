@@ -13,7 +13,7 @@ from ..models.order_details import OrderDetail
 
 
 def update_order_details(db, order, request):
-    for order in request.orders:
+    for item in request.items:
         candidate = db.query(item_model.MenuItem).filter(
             item_model.MenuItem.id == item.item.id).first()
 
@@ -53,15 +53,15 @@ def create(db: Session, request):
     if request.promotion_code:
         promotion = db.query(promotions_model.Promotion).filter(
             promotions_model.Promotion.promotion_code == request.promotion_code).first()
-    print(f"HERE: {promotion.discount}")
 
     new_order = model.Order(
+        date=datetime.now(),
         customer_name=request.customer_name,
         description=request.description,
         total_price=request.total_price,
         type=request.type,
-        status=request.status,
-        promotion_id=promotion.id
+        status=request.status# ,
+        # promotion_id=promotion.id
     )
 
     update_order_details(db, new_order, request)
@@ -69,13 +69,16 @@ def create(db: Session, request):
     try:
         db.add(new_order)
         db.flush()
-        new_order.calculate_total_price(promotion.discount)
+        print(promotion.expiration_date > datetime.now())
+        if promotion and (datetime.now() - promotion.expiration_date).total_seconds() < 0:
+            new_order.calculate_total_price(promotion.discount)
+        else:
+            new_order.calculate_total_price()
         db.commit()
         db.refresh(new_order)
     except SQLAlchemyError as e:
         error = str(e.__dict__['orig'])
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
-
     return new_order
 
 
@@ -165,6 +168,7 @@ def place_order(db: Session, order_id):
         if not order.first():
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
         elif not order.first().order_placed:
+            order.update({"status": "Your order has been placed"}, synchronize_session=False)
             order.update({"order_placed": datetime.now()}, synchronize_session=False)
             db.commit()
         else:
@@ -180,6 +184,7 @@ def cancel_order(db: Session, order_id):
         if not order.first():
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
         elif order.first().order_placed and not order.first().order_canceled and not order.first().order_ready:
+            order.update({"status": "Your order has been canceled"}, synchronize_session=False)
             order.update({"order_canceled": datetime.now()}, synchronize_session=False)
             db.commit()
         else:
@@ -196,6 +201,7 @@ def prep_order(db: Session, order_id):
         if not order.first():
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
         elif order.first().order_placed and not order.first().order_canceled and not order.first().order_prepping:
+            order.update({"status": "Your order is bein prepped"}, synchronize_session=False)
             order.update({"order_prepping": datetime.now()}, synchronize_session=False)
             db.commit()
         else:
@@ -212,6 +218,7 @@ def ready_order(db: Session, order_id):
         if not order.first():
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
         elif (order.first().order_placed and order.first().order_prepping and not order.first().order_ready) and not order.first().order_canceled:
+            order.update({"status": "Your order is ready"}, synchronize_session=False)
             order.update({"order_ready": datetime.now()}, synchronize_session=False)
             db.commit()
         else:

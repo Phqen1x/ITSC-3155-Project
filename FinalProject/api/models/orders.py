@@ -15,6 +15,8 @@ class Order(Base):
     description = Column(String(500), nullable=False, unique=False)
     total_price = Column(DECIMAL(10, 2), nullable=False, unique=False)
     type = Column(String(100), nullable=False, unique=False)
+    status = Column(String(100), nullable=False, unique=False)
+    promotion_id = Column(Integer, ForeignKey("promotions.id"))
 
     # Order Statuses
     order_placed = Column(DATETIME, nullable=True)
@@ -25,8 +27,6 @@ class Order(Base):
     # Review Variables
     review_text = Column(String(500))
     review_rating = Column(DECIMAL)
-# how can i have people input a promotion code as a string (e.g. "test") and then associate that string with a promotion id?
-    promotion_id = Column(Integer, ForeignKey("promotions.id"))
 
     # Relationships
     order_details = relationship("OrderDetail", back_populates="order",
