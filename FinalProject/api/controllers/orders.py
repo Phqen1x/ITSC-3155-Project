@@ -354,6 +354,15 @@ def get_status(db, order_id):
     except SQLAlchemyError as e:
         error = str(getattr(e, 'orig', e))
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
+
+
+def get_orders_between_dates(db: Session, start_date: datetime, end_date: datetime):
+    orders = db.query(Order).filter(Order.order_placed != None).filter(
+        Order.order_placed >= start_date,
+        Order.order_placed <= end_date
+    ).all()
+    return orders
+
 '''
 def rate_orders(db: Session, order_id):
     # Assign orders a blue like 1-5.

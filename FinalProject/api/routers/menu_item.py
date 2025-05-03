@@ -24,8 +24,7 @@ def read_all(db: Session = Depends(get_db)):
 
 #Get menu by categories
 @router.get("/categories", response_model=List[schema.MenuItem])
-def read_category(
-    category_ids: Annotated[List[int], Query()],
+def read_category(category_ids: Annotated[List[int], Query()],
     search_and: bool = False,
     db: Session = Depends(get_db)
 ):
