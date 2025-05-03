@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from ..controllers import menu_item as controller
@@ -23,6 +25,12 @@ def read_all(db: Session = Depends(get_db)):
 @router.get("/{item_id}", response_model=schema.MenuItem)
 def read_one(item_id: int, db: Session = Depends(get_db)):
     return controller.read_one(db, item_id=item_id)
+
+#Get menu by categories
+@router.post("/categories", response_model=List[schema.MenuItem])
+def read_category(request: schema.MenuItemCategory, db: Session = Depends(get_db)):
+    return controller.read_category(db, request=request)
+
 
 # Update a specific menu item
 @router.put("/{item_id}", response_model=schema.MenuItem)
