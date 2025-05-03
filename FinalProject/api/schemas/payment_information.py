@@ -8,6 +8,7 @@ class PaymentBase(BaseModel):
     card_cvc: int
 
 class PaymentCreate(PaymentBase):
+    customer_id: int
     pass
 
 class PaymentUpdate(BaseModel):
