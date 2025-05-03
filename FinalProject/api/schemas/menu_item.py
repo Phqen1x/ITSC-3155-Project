@@ -1,6 +1,8 @@
-from datetime import datetime
+
 from typing import Optional
 from pydantic import BaseModel
+
+from .categories import Category
 
 
 class MenuItemBase(BaseModel):
@@ -11,7 +13,7 @@ class MenuItemBase(BaseModel):
 
 
 class MenuItemCreate(MenuItemBase):
-    amount: float
+    recipe: int
 
 
 class MenuItemUpdate(MenuItemBase):
@@ -19,10 +21,27 @@ class MenuItemUpdate(MenuItemBase):
     price: Optional[float] = None
     calories: Optional[int] = None
     category: Optional[str] = None
+    recipe_id: Optional[int] = None
 
 
 class MenuItem(MenuItemBase):
     id: int
+
+    class ConfigDict:
+        from_attributes = True
+
+
+class CategoryInMenu(BaseModel):
+    category: Category
+
+    class ConfigDict:
+        from_attributes = True
+
+
+class MenuItemCategory(BaseModel):
+    categories: list[CategoryInMenu]
+    #True = find if all categories match, false to find if ANY category matches
+    search_and: bool = False
 
     class ConfigDict:
         from_attributes = True

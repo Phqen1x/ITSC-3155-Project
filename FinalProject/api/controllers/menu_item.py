@@ -1,12 +1,25 @@
+from typing import List
+
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status, Response
 from ..models import menu_item as model
 from sqlalchemy.exc import SQLAlchemyError
 
+from ..models.recipes import Recipe
+from ..models.recipes_categories import RecipesCategories
+
+
 # Newly created file by Tareq
 def create(db: Session, request):
+    recipe = db.query(Recipe).filter_by(id=request.recipe).first()
+
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+
     new_item = model.MenuItem(
         item_name=request.item_name,
+        recipe=recipe,
         price=request.price,
         calories=request.calories,
         category=request.category
@@ -18,7 +31,6 @@ def create(db: Session, request):
         db.refresh(new_item)
     except SQLAlchemyError as e:
         error = str(getattr(e, 'orig', 'No original error found'))
-        # error = str(getattr(e, 'orig', 'No original error found'))
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
 
     return new_item
@@ -28,7 +40,6 @@ def read_all(db: Session):
     try:
         result = db.query(model.MenuItem).all()
     except SQLAlchemyError as e:
-        # error = str(e.__dict__['orig'])
         error = str(getattr(e, 'orig', 'No original error found'))
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
     return result
@@ -40,7 +51,6 @@ def read_one(db: Session, item_id):
         if not ingredient:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
     except SQLAlchemyError as e:
-        # error = str(e.__dict__['orig'])
         error = str(getattr(e, 'orig', 'No original error found'))
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
     return ingredient
@@ -48,17 +58,16 @@ def read_one(db: Session, item_id):
 
 def update(db: Session, item_id, request):
     try:
-        ingredient = db.query(model.MenuItem).filter(model.MenuItem.id == item_id)
-        if not ingredient.first():
+        item = db.query(model.MenuItem).filter(model.MenuItem.id == item_id)
+        if not item.first():
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
         update_data = request.dict(exclude_unset=True)
-        ingredient.update(update_data, synchronize_session=False)
+        item.update(update_data, synchronize_session=False)
         db.commit()
     except SQLAlchemyError as e:
-        # error = str(e.__dict__['orig'])
         error = str(getattr(e, 'orig', 'No original error found'))
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
-    return ingredient.first()
+    return item.first()
 
 
 def delete(db: Session, item_id):
@@ -69,7 +78,39 @@ def delete(db: Session, item_id):
         ingredient.delete(synchronize_session=False)
         db.commit()
     except SQLAlchemyError as e:
-        # error = str(e.__dict__['orig'])
         error = str(getattr(e, 'orig', 'No original error found'))
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+def read_category(db: Session, category_ids: List[int], search_and: bool):
+    if not category_ids:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No category IDs provided.")
+
+    try:
+        if search_and:
+           items = ((((db.query(model.MenuItem)
+                    .join(model.MenuItem.recipe))
+                    .join(Recipe.categories_link))
+                    .filter(RecipesCategories.category_id.in_(category_ids))
+                    .distinct().all()))
+        else:
+            category_count = len(category_ids)
+            subquery = (
+                db.query(Recipe.id.label("recipe_id"))
+                .join(RecipesCategories)
+                .filter(RecipesCategories.category_id.in_(category_ids))
+                .group_by(Recipe.id)
+                .having(func.count(RecipesCategories.category_id.distinct()) == category_count)
+                .subquery()
+            )
+            items = (((db.query(model.MenuItem)
+                     .join(model.MenuItem.recipe))
+                     .join(subquery, Recipe.id == subquery.c.recipe_id))
+                     .all())
+        if not items:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Id not found!")
+    except SQLAlchemyError as e:
+        error = str(getattr(e, 'orig', 'No original error found'))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error)
+    return items

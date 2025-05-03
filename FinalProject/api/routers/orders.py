@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Depends, FastAPI, status, Response
+from datetime import datetime
+from typing import List
+
+from fastapi import APIRouter, Depends, FastAPI, status, Response, Query
 from sqlalchemy.orm import Session
 from ..controllers import orders as controller
 from ..schemas import orders as schema
@@ -6,7 +9,7 @@ from ..dependencies.database import engine, get_db
 from ..schemas.orders import OrderStatusUpdate
 
 router = APIRouter(
-        tags=['Orders'],
+    tags=['Orders'],
     prefix="/orders"
 )
 
@@ -24,6 +27,15 @@ def create_cart(request: schema.OrderCreate, db: Session = Depends(get_db)):
 @router.get("/", response_model=list[schema.Order])
 def read_all(db: Session = Depends(get_db)):
     return controller.read_all(db)
+
+
+@router.get("/between-dates", response_model=List[schema.Order])
+def get_orders_by_date_range(
+    start_date: datetime = Query(..., description="Start date in format YYYY-MM-DD"),
+    end_date: datetime = Query(..., description="End date in format YYYY-MM-DD"),
+    db: Session = Depends(get_db)
+):
+    return controller.get_orders_between_dates(db, start_date, end_date)
 
 
 @router.get("/{order_id}", response_model=schema.Order)

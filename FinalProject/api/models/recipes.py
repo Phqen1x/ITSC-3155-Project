@@ -14,7 +14,6 @@ class Recipe(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
 
-    #menu_items = relationship("MenuItem", back_populates="recipes")
     resources_link = relationship("RecipesResource", back_populates="recipe", cascade="all, delete-orphan")
     categories_link = relationship("RecipesCategories", back_populates="recipe", cascade="all, delete-orphan")
 
