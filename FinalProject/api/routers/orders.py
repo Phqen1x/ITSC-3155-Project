@@ -1,3 +1,7 @@
+from datetime import datetime
+from fastapi import Query
+from typing import List
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from ..controllers import orders as controller
@@ -34,4 +38,14 @@ def update(item_id: int, request: schema.OrderUpdate, db: Session = Depends(get_
 def delete(item_id: int, db: Session = Depends(get_db)):
     return controller.delete(db=db, item_id=item_id)
 
-# Conduct testing in routers\order.py for the newly added functions in controllers\orders.py
+# Endpoints of unique features.
+
+@router.get("/sum-profits", response_model=List[schema.Order])
+def sum_profit_by_date_range(
+    start_date: datetime = Query(..., description="Start date in format YYYY-MM-DD"),
+    end_date: datetime = Query(..., description="End date in format YYYY-MM-DD"),
+    db: Session = Depends(get_db)
+):
+    return controller.calculate_sum_profit_between_days(db, start_date, end_date)
+
+

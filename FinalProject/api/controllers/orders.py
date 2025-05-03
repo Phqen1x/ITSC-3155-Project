@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status, Response, Depends
 from ..models import orders as model
@@ -71,7 +73,7 @@ def delete(db: Session, item_id):
 # Add functions for data analyzing in this file:
 
 # Function 1: Create a function that calculates the sum profit between days.
-def calculate_sum_profit_between_days(db: Session, order_id, start_date, end_date):
+def calculate_sum_profit_between_days(db: Session, start_date: datetime, end_date: datetime):
     # Retrieve order information by query().
     orders = db.query(model.Order).filter(model.Order.order_ready >= start_date).filter(model.Order.order_ready <= end_date).all()
 
@@ -80,11 +82,11 @@ def calculate_sum_profit_between_days(db: Session, order_id, start_date, end_dat
 
     # Iterate over a loop and add results up to sum.
     for order in orders:
-        if order_id == order.id:
-            sum_profit += order.profit
+        sum_profit += order.total_price
 
     # Once sum is calculated return the sum.
     return sum_profit
+
 
 # Function 2: Create a function that lists the average amount of time between order statuses.
 def average_time_between_order_statuses(db: Session, order_id):
@@ -133,36 +135,7 @@ def list_items_by_amount_of_order(db: Session, order_id):
     return sorted_list
 
 
-# Create functions that will allow you to give a rating of 1-5 or 1-10 to the orders table.
-# also create a function that will allow you leave review for orders. Specifically a string.
-
-# Function 4: Allow user to rate their orders.
-def rate_orders(db: Session, order_id):
-    # Assign orders a value like 1-5.
-
-    # Create an orders list.
-    orders = db.query(model.Order)
-
-    # Access review_rating.
-    ratings = db.query(model.review_rating)
-
-    # return back a proper rating.
-    for rating in ratings:
-        if rating == 1:
-            return 1
-        elif rating == 2:
-            return 2
-        elif rating == 3:
-            return 3
-        elif rating == 4:
-            return 4
-        elif rating == 5:
-            return 5
 
 
-# Function 5: Allow the user to review order
-def review_orders():
-    # Allow user to create a description.
-    description = input("Please enter a review: ")
 
-    return description
+

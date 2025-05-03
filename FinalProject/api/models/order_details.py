@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from ..dependencies.database import Base
 
 
-class OrderDetail(Base):
+class Order(Base):
     __tablename__ = "order_details"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
