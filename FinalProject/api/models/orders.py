@@ -25,8 +25,8 @@ class Order(Base):
     # Review Variables
     review_text = Column(String(500))
     review_rating = Column(DECIMAL)
-
-    promotion_code = Column(Integer, ForeignKey("promotions.id"))
+# how can i have people input a promotion code as a string (e.g. "test") and then associate that string with a promotion id?
+    promotion_id = Column(Integer, ForeignKey("promotions.id"))
 
     # Relationships
     order_details = relationship("OrderDetail", back_populates="order",
@@ -34,7 +34,7 @@ class Order(Base):
     promotions = relationship("Promotion", back_populates="orders")
     customer = relationship("Customer", back_populates="orders")
 
-    def calculate_total_price(self):
+    def calculate_total_price(self, discount=None):
         total = Decimal(0)
         for detail in self.order_details:
             if detail.menu_item and detail.menu_item.price is not None:
@@ -44,4 +44,6 @@ class Order(Base):
                 raise ValueError(
                     f"Missing price or menu_item for item_id {detail.item_id}"
                 )
+        if discount:
+            total *= Decimal((100-discount)/100)
         self.total_price = total
