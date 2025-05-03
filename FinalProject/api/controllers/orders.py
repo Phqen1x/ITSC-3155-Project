@@ -70,7 +70,8 @@ def create(db: Session, request):
     try:
         db.add(new_order)
         db.flush()
-        if promotion:
+        print(promotion.expiration_date > datetime.now())
+        if promotion and (datetime.now() - promotion.expiration_date).total_seconds() < 0:
             new_order.calculate_total_price(promotion.discount)
         else:
             new_order.calculate_total_price()
