@@ -1,3 +1,5 @@
+from typing import List
+
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status, Response
@@ -81,10 +83,12 @@ def delete(db: Session, item_id):
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-def read_category(db, request):
-    category_ids = [category.category.id for category in request.categories]
+def read_category(db: Session, category_ids: List[int], search_and: bool):
+    if not category_ids:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No category IDs provided.")
+
     try:
-        if request.search_and:
+        if search_and:
            items = ((((db.query(model.MenuItem)
                     .join(model.MenuItem.recipe))
                     .join(Recipe.categories_link))
