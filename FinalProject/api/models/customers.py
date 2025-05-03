@@ -16,4 +16,5 @@ class Customer(Base):
     customer_address = Column(String(100), unique=False, nullable=True)
 
     payment_information= relationship("PaymentInfo", back_populates="customer")
-    orders = relationship("Order", back_populates="customer")
+    orders = relationship("Order", back_populates="customer",
+                                 cascade="all, delete-orphan")
