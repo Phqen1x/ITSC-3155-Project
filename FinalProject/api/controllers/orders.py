@@ -2,6 +2,8 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status, Response
+
+from . import order_details
 from ..models import orders as model
 from ..models import menu_item as item_model
 from ..models import promotions as promotions_model
@@ -9,7 +11,7 @@ from ..models import order_details as details_model
 from ..models.orders import Order
 from sqlalchemy.exc import SQLAlchemyError
 
-from ..models.order_details import OrderDetail
+
 
 
 def update_order_details(db, order, request):
@@ -363,33 +365,67 @@ def get_orders_between_dates(db: Session, start_date: datetime, end_date: dateti
     ).all()
     return orders
 
-'''
-def rate_orders(db: Session, order_id):
-    # Assign orders a blue like 1-5.
-    # Create an orders list.
+
+# Function #1
+def calculate_sum_profit_between_days(db: Session, start_date: datetime, end_date: datetime):
+    # Retrieve order information by query().
+    orders = db.query(model.Order).filter(model.Order.order_ready >= start_date).filter(
+        model.Order.order_ready <= end_date).all()
+
+    # Create a sum_profit.
+    sum_profit = 0
+
+    # Iterate over a loop and add results up to sum.
+    for order in orders:
+        sum_profit += order.total_price
+    # Once sum is calculated return the sum.
+    return sum_profit
+
+
+# Function 2: Create a function that lists the average amount of time between order statuses.
+def average_time_between_order_statuses(db: Session, order_id):
+    # Retrieve order information by query().
+    orders = db.query(model.Order).filter(model.Order.order_ready)
+
+    # Once list of orders retrieved get the time between orders.
+    order_placed_times = orders.filter(
+        model.Order.order_placed == order_id).all()  # Represents the times an order is placed.
+
+    # Create some needed values.
+    sum_of_time = 0.0  # Represents the amount of time added up.
+
+    count = 0  # Represents the amount of numbers in list.
+
+    # Iterate through the list through list.
+    for order_placed_time in order_placed_times:
+        # Add up all the times.
+        sum_of_time += order_placed_time
+        # Keep track of the amount of numbers to divide by.
+        count += 1
+
+    # Calculate average.
+    average_time = sum_of_time / count
+
+    return average_time
+
+
+# Function 3: Create a function that list items by amount of orders.
+def list_order_amount_by_item(db: Session, item_id):
+    # Retrieve a list of all orders.
     orders = db.query(model.Order)
 
-    # Access review_rating.
-    ratings = db.query(model.review_rating)
+    # Retrieve order details.
+    order_details = db.query(details_model.OrderDetail)
 
-    # return back a proper rating.
-    for rating in ratings:
-        if rating == 1:
-            return 1
+    # Make a list of all items from orders.
+    list_of_items = db.query(item_model.MenuItem)
 
-        elif rating == 2:
-            return 2
- 
-        elif rating == 3:
-            return 3
+    count = 0
 
-        elif rating == 4:
-            return 4
-        
-        elif rating == 5:
-            return 5
-    # Function 5: Allow the user to review order
-    def review_orders():
-        # Allow user to create a description.
-        description = input("Please enter a review: ")
-        return description'''
+    for order in orders:
+        for detail in order_details:
+            if (detail.item_id == item_id):
+                count += 1
+
+
+    return count
