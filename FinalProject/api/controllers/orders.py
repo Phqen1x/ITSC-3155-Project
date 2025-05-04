@@ -1,5 +1,5 @@
 from datetime import datetime
-
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status, Response
 
@@ -55,7 +55,7 @@ def check_resources(order):
         menu_item = detail.menu_item
         recipe = menu_item.recipe
         for recipe_resource in recipe.resources_link:
-            required_amount = detail.amount * recipe_resource.amount
+            required_amount = detail.amount * float(recipe_resource.amount)
             if recipe_resource.resource.amount < required_amount:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
@@ -85,7 +85,7 @@ def create(db: Session, request):
         description=request.description,
         total_price=request.total_price,
         type=request.type,
-        #status=request.status# ,
+        status=request.status
         # promotion_id=promotion.id
     )
 
@@ -366,21 +366,14 @@ def get_orders_between_dates(db: Session, start_date: datetime, end_date: dateti
     return orders
 
 
-# Function #1
+# Sums the price of all orders between given dates
 def calculate_sum_profit_between_days(db: Session, start_date: datetime, end_date: datetime):
-    # Retrieve order information by query().
-    orders = db.query(model.Order).filter(model.Order.order_ready >= start_date).filter(
-        model.Order.order_ready <= end_date).all()
+    sum_profit = db.query(func.sum(model.Order.total_price)).filter(
+        model.Order.order_ready >= start_date,
+        model.Order.order_ready <= end_date
+    ).scalar()
 
-    # Create a sum_profit.
-    sum_profit = 0
-
-    # Iterate over a loop and add results up to sum.
-    for order in orders:
-        sum_profit += order.total_price
-    # Once sum is calculated return the sum.
     return sum_profit
-
 
 # Function 2: Create a function that lists the average amount of time between order statuses.
 def average_time_between_order_statuses(db: Session, order_id):
@@ -427,5 +420,5 @@ def list_order_amount_by_item(db: Session, item_id):
             if (detail.item_id == item_id):
                 count += 1
 
-
     return count
+

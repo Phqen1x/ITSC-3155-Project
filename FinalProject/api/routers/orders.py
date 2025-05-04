@@ -94,17 +94,20 @@ def ready_order(order_id: int, db: Session = Depends(get_db)):
 
 @router.delete("/{order_id}")
 def delete(order_id: int, db: Session = Depends(get_db)):
-    return controller.delete(db=db, item_id=order_id)
+    return controller.delete(db=db, order_id=order_id)
 
 # Endpoints of unique features.
-@router.get("/sum-profits", response_model=List[schema.Order])
-def sum_profit_by_date_range(
-    start_date: datetime = Query(..., description="Start date in format YYYY-MM-DD"),
-    end_date: datetime = Query(..., description="End date in format YYYY-MM-DD"),
-    db: Session = Depends(get_db)
-):
-    return controller.calculate_sum_profit_between_days(db, start_date, end_date)
-
+'''
+@router.get("/sum_profits")
+def sum_profit_by_date_range():
+    # start_date: datetime = Query(..., description="Start date in format YYYY-MM-DD"),
+    # end_date: datetime = Query(..., description="End date in format YYYY-MM-DD"),
+    # db: Session = Depends(get_db)
+    # ):
+    print("sum_profit_by_date_range")
+    # return controller.calculate_sum_profit_between_days(db, start_date, end_date)
+    return "foo"
+'''
 
 @router.get("/{item_id}", response_model=schema.Order)
 def list_order_amount_by_item(item_id: int, db: Session = Depends(get_db)):

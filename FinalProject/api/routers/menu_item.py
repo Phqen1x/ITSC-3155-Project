@@ -45,3 +45,14 @@ def update(item_id: int, request: schema.MenuItemUpdate, db: Session = Depends(g
 @router.delete("/{item_id}")
 def delete(item_id: int, db: Session = Depends(get_db)):
     return controller.delete(db=db, item_id=item_id)
+
+@router.get("/sum_profits")
+def sum_profit_by_date_range():
+    # start_date: datetime = Query(..., description="Start date in format YYYY-MM-DD"),
+    # end_date: datetime = Query(..., description="End date in format YYYY-MM-DD"),
+    # db: Session = Depends(get_db)
+    # ):
+    print("sum_profit_by_date_range")
+    # return controller.calculate_sum_profit_between_days(db, start_date, end_date)
+    return "foo"
+
