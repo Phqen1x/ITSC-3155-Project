@@ -31,5 +31,3 @@ def test_create_resource(db_session):
     assert created_resource.item == "cheese"
     assert created_resource.amount == 999
     assert created_resource.unit == "slices"
-
-

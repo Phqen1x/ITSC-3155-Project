@@ -374,7 +374,7 @@ def calculate_sum_profit_between_days(db: Session, start_date: datetime, end_dat
     ).scalar()
 
     return sum_profit
-
+'''
 # Function 2: Create a function that lists the average amount of time between order statuses.
 def average_time_between_order_statuses(db: Session, order_id):
     # Retrieve order information by query().
@@ -421,4 +421,4 @@ def list_order_amount_by_item(db: Session, item_id):
                 count += 1
 
     return count
-
+'''
