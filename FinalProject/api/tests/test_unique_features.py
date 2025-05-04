@@ -1,30 +1,35 @@
 from fastapi.testclient import TestClient
-from ..controllers import orders as controller
+from ..controllers import resources as controller
 from ..main import app
 import pytest
-from ..models import orders as model
- 
+from ..models import resources as model
 
 # Create a test client for the app
 client = TestClient(app)
 
 
-# Here is the code skeleton.
-def test_calculate_sum_profit_between_days():
-    pass
+@pytest.fixture
+def db_session(mocker):
+    return mocker.Mock()
 
 
-def test_average_time_between_order_statuses():
-    pass
+def test_create_resource(db_session):
+    # Create a sample resource.
+    resource_data = {
+        "item": "cheese",
+        "amount": 999,
+        "unit": "slices"
+    }
+
+    resource_object = model.Resource(**resource_data)
+
+    # Call the create function
+    created_resource = controller.create(db_session, resource_object)
+
+    # Assertions
+    assert created_resource is not None
+    assert created_resource.item == "cheese"
+    assert created_resource.amount == 999
+    assert created_resource.unit == "slices"
 
 
-def test_list_items_by_amount_of_order():
-    pass
-
-
-def test_rate_orders():
-    pass
-
-
-def test_review_orders():
-    pass
